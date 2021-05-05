@@ -12,6 +12,7 @@ namespace Il2CppDumper
     class Program
     {
         private static Config config;
+        private static string filterPath = null;
 
         [STAThread]
         static void Main(string[] args)
@@ -72,6 +73,11 @@ namespace Il2CppDumper
                     if (ofd.ShowDialog() == DialogResult.OK)
                     {
                         metadataPath = ofd.FileName;
+                        ofd.Filter = "generator filter|*.json";
+                        if (ofd.ShowDialog() == DialogResult.OK)
+                        {
+                            filterPath = ofd.FileName;
+                        }
                     }
                     else
                     {
@@ -251,6 +257,14 @@ namespace Il2CppDumper
             {
                 Console.WriteLine("Generate dummy dll...");
                 DummyAssemblyExporter.Export(executor, outputDir, config.DummyDllAddToken);
+                Console.WriteLine("Done!");
+            }
+            if (filterPath != null)
+            {
+                Console.WriteLine("Generate filter file...");
+                var filterjson = JsonConvert.DeserializeObject<FilterJson>(File.ReadAllText(filterPath));
+                var filterHeaderGenerator = new FilterHeaderGenerator(executor, filterjson);
+                filterHeaderGenerator.WriteHeader(outputDir);
                 Console.WriteLine("Done!");
             }
         }
